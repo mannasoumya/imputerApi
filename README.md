@@ -2,6 +2,8 @@
 
 Check out the [Wiki](<https://en.wikipedia.org/wiki/Imputation_(statistics)>) here.
 
+### ['imputerApi' Documentation](https://mannasoumya.github.io/imputerApi/).
+
 ## Currently Supported Strategies:
 
 - Mean
