@@ -200,6 +200,19 @@ class ImputerApi(object):
         print('-'*header_dashes_chars_count)
 
     def dump_data_to_csv(self,dst_file_path,data:list,delimiter=',',override=False,use_header_from_data=False):
+        """Function to get mean of a list 
+        
+            Parameters:
+            dst_file_path (String): CSV file name to write to,
+            data (List): Matrix to be written,
+            delimiter (String): Delimiter to be used in CSV,
+            override (Boolean): Override existing file,
+            use_header_from_data (Boolean): Flag whether to use header values from input data
+
+            Returns:
+            None
+
+        """
         assert(dst_file_path!='' or dst_file_path!=None)
         if (dst_file_path.split("."))[-1] == dst_file_path:
             dst_file_path = dst_file_path+".csv"
@@ -236,7 +249,7 @@ class ImputerApi(object):
         """Function to get mean of a list 
         
             Parameters:
-            arr (List): Input List
+            arr (List): Input List,
             missing_value (Any): Value to be skipped
 
             Returns:
@@ -270,7 +283,7 @@ class ImputerApi(object):
         """Function to get median of a list 
         
             Parameters:
-            arr (List): Input List
+            arr (List): Input List,
             missing_value (Any): Value to be skipped
 
             Returns:
@@ -306,7 +319,7 @@ class ImputerApi(object):
         """Function to get most frequent value of a list 
         
             Parameters:
-            arr (List): Input List
+            arr (List): Input List,
             missing_value (Any): Value to be skipped
 
             Returns:
@@ -335,8 +348,8 @@ class ImputerApi(object):
         """Wrapper Function over mean which performs replace operation given indexed array 
         
             Parameters:
-            arr (List): Input List
-            index_arr (List:Int):  Indexes of list whose values are to be replaced
+            arr (List): Input List,
+            index_arr (List:Int):  Indexes of list whose values are to be replaced,
             missing_value (Any): Value to be skipped
 
             Returns:
@@ -356,8 +369,8 @@ class ImputerApi(object):
         """Wrapper Function over median which performs replace operation given indexed array 
         
             Parameters:
-            arr (List): Input List
-            index_arr (List:Int):  Indexes of list whose values are to be replaced
+            arr (List): Input List,
+            index_arr (List:Int):  Indexes of list whose values are to be replaced,
             missing_value (Any): Value to be skipped
 
             Returns:
@@ -377,8 +390,8 @@ class ImputerApi(object):
         """Wrapper Function over most_frequent which performs replace operation given indexed array 
         
             Parameters:
-            arr (List): Input List
-            index_arr (List:Int):  Indexes of list whose values are to be replaced
+            arr (List): Input List,
+            index_arr (List:Int):  Indexes of list whose values are to be replaced,
             missing_value (Any): Value to be skipped
 
             Returns:
@@ -398,9 +411,9 @@ class ImputerApi(object):
         """Wrapper Function which performs replace operation given indexed array and a constant
         
             Parameters:
-            arr (List): Input List
-            index_arr (List:Int):  Indexes of list whose values are to be replaced
-            missing_value (Any): Value to be skipped
+            arr (List): Input List,
+            index_arr (List:Int):  Indexes of list whose values are to be replaced,
+            missing_value (Any): Value to be skipped,
             constant (Any): Value to be replaced with
 
             Returns:
