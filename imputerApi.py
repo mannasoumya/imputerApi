@@ -8,6 +8,7 @@ class ImputerApi(object):
     def __init__(self, path_to_file=None, matrix_2D=None, delimiter=",", strategy="mean",headers=True) -> None:
         """
         Constructor
+        Return : None
         """
         self.path_to_file = path_to_file
         self.matrix_2D = matrix_2D
@@ -40,11 +41,29 @@ class ImputerApi(object):
 
     @staticmethod
     def not_implemented(fn_name):
+        """Helper Function
+
+            Parameters:
+            fn_name (string): Function Name
+
+            Returns:
+            None
+
+        """
         print(f"\n`{fn_name}` is not implemented yet.\n\n")
         raise NotImplementedError
     
     @staticmethod
     def give_me_first(arr):
+        """Function to get first element of a list and the rest
+        
+            Parameters:
+            arr (List): Input List
+
+            Returns:
+            Tuple: (First Element, Rest of the List)
+
+        """
         # Not exactly pop but loose
         if isinstance(arr,list)==False:
             raise Exception("InvalidType")
@@ -214,6 +233,16 @@ class ImputerApi(object):
 
     @staticmethod
     def mean(arr,missing_value=''):
+        """Function to get mean of a list 
+        
+            Parameters:
+            arr (List): Input List
+            missing_value (Any): Value to be skipped
+
+            Returns:
+            float: Mean of the List
+
+        """
         l = len(arr)
         missing_count=0
         try:
@@ -238,6 +267,16 @@ class ImputerApi(object):
 
     @staticmethod
     def median(arr,missing_value=''):
+        """Function to get median of a list 
+        
+            Parameters:
+            arr (List): Input List
+            missing_value (Any): Value to be skipped
+
+            Returns:
+            float: median of the List
+
+        """
         l = len(arr)
         try:
             assert(l > 0)
@@ -264,6 +303,16 @@ class ImputerApi(object):
     
     @staticmethod
     def most_frequent(arr,missing_value=''):
+        """Function to get most frequent value of a list 
+        
+            Parameters:
+            arr (List): Input List
+            missing_value (Any): Value to be skipped
+
+            Returns:
+            any: most frequent value of the List
+
+        """
         dct = {}
         for el in arr:
             if el == missing_value:
@@ -283,6 +332,17 @@ class ImputerApi(object):
 
 
     def arr_replace_by_mean(self, arr, index_arr,missing_value=''):
+        """Wrapper Function over mean which performs replace operation given indexed array 
+        
+            Parameters:
+            arr (List): Input List
+            index_arr (List:Int):  Indexes of list whose values are to be replaced
+            missing_value (Any): Value to be skipped
+
+            Returns:
+            list: Replaced List
+
+        """
         arr_copy = copy.deepcopy(arr)
         mean_ = ImputerApi.mean(arr_copy,missing_value)
         for i in index_arr:
@@ -293,6 +353,17 @@ class ImputerApi(object):
         return arr_copy
 
     def arr_replace_by_median(self, arr, index_arr,missing_value=''):
+        """Wrapper Function over median which performs replace operation given indexed array 
+        
+            Parameters:
+            arr (List): Input List
+            index_arr (List:Int):  Indexes of list whose values are to be replaced
+            missing_value (Any): Value to be skipped
+
+            Returns:
+            list: Replaced List
+
+        """
         arr_copy = copy.deepcopy(arr)
         median_ = ImputerApi.median(arr_copy,missing_value)
         for i in index_arr:
@@ -303,6 +374,17 @@ class ImputerApi(object):
         return arr_copy
 
     def arr_replace_by_most_frequent(self, arr, index_arr,missing_value=''):
+        """Wrapper Function over most_frequent which performs replace operation given indexed array 
+        
+            Parameters:
+            arr (List): Input List
+            index_arr (List:Int):  Indexes of list whose values are to be replaced
+            missing_value (Any): Value to be skipped
+
+            Returns:
+            list: Replaced List
+
+        """
         arr_copy = copy.deepcopy(arr)
         most_frequent_ = ImputerApi.most_frequent(arr_copy,missing_value)
         for i in index_arr:
@@ -313,6 +395,18 @@ class ImputerApi(object):
         return arr_copy
     
     def arr_replace_by_constant(self, arr, index_arr,missing_value='',constant=''):
+        """Wrapper Function which performs replace operation given indexed array and a constant
+        
+            Parameters:
+            arr (List): Input List
+            index_arr (List:Int):  Indexes of list whose values are to be replaced
+            missing_value (Any): Value to be skipped
+            constant (Any): Value to be replaced with
+
+            Returns:
+            list: Replaced List
+
+        """
         arr_copy = copy.deepcopy(arr)
         for i in index_arr:
             if isinstance(arr[i],str):
