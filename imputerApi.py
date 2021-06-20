@@ -6,6 +6,9 @@ import os
 
 class ImputerApi(object):
     def __init__(self, path_to_file=None, matrix_2D=None, delimiter=",", strategy="mean",headers=True) -> None:
+        """
+        Constructor
+        """
         self.path_to_file = path_to_file
         self.matrix_2D = matrix_2D
         self.delimiter = delimiter
@@ -13,7 +16,7 @@ class ImputerApi(object):
         self.data = []
         self.headers = headers
         self.headers_value = []
-        self.supported_strategies = ["mean","median","most-frequent"]
+        self.supported_strategies = ["mean","median","most-frequent","constant"]
         if self.strategy not in self.supported_strategies:
             print(f":ERROR: `{self.strategy}` is not a supported strategy.\nSupported strategies are: `{('`,`'.join(self.supported_strategies))}` .")
             sys.exit(1)
@@ -72,7 +75,7 @@ class ImputerApi(object):
             print(e.args)
             sys.exit(1)
     
-    def transform(self,columns_by_header_name=[],column_indexes=[],row_start=0,row_end=-1,missing_value=''):
+    def transform(self,columns_by_header_name=[],column_indexes=[],row_start=0,row_end=-1,missing_value='',constant=None):
         if row_end==-1:
             row_end = len(self.data)-1
         if isinstance(row_start,int)==False or row_start<0 or row_start>row_end or (float(row_start)-row_start)!=0.0:
@@ -90,7 +93,8 @@ class ImputerApi(object):
         fn_mapping={
             "mean": self.arr_replace_by_mean,
             "median": self.arr_replace_by_median,
-            "most-frequent":self.arr_replace_by_most_frequent
+            "most-frequent":self.arr_replace_by_most_frequent,
+            "constant":self.arr_replace_by_constant
         }
         fn_to_be_called = fn_mapping[self.strategy]
 
@@ -103,7 +107,14 @@ class ImputerApi(object):
             if index_arr == []:
                 warning_text= f":WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and selected in columns: {col_header_indexes} .\n"
                 warnings.warn(warning_text)
-            result.append(fn_to_be_called(temp_array,index_arr,missing_value))
+            if self.strategy == "constant":
+                if constant==None:
+                    print(f"\n:ERROR: Parameter `constant` needs to be passed to `transform`.\n")
+                    sys.exit(1)
+                else:
+                    result.append(fn_to_be_called(temp_array,index_arr,missing_value,constant))
+            else:
+                result.append(fn_to_be_called(temp_array,index_arr,missing_value))
                 
         return self.transform_sub_2_put_back(row_start,row_end,col_header_indexes,result)
 
@@ -299,4 +310,13 @@ class ImputerApi(object):
                 arr_copy[i] = str(most_frequent_)
             else:
                 arr_copy[i] = most_frequent_
+        return arr_copy
+    
+    def arr_replace_by_constant(self, arr, index_arr,missing_value='',constant=''):
+        arr_copy = copy.deepcopy(arr)
+        for i in index_arr:
+            if isinstance(arr[i],str):
+                arr_copy[i] = str(constant)
+            else:
+                arr_copy[i] = constant
         return arr_copy

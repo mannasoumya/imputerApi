@@ -7,6 +7,7 @@ Check out the [Wiki](<https://en.wikipedia.org/wiki/Imputation_(statistics)>) he
 - Mean
 - Median
 - Most-Frequent
+- Constant
 
 ## Usage:
 
