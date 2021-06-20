@@ -13,7 +13,7 @@ class ImputerApi(object):
         self.data = []
         self.headers = headers
         self.headers_value = []
-        self.supported_strategies = ["mean","median"]
+        self.supported_strategies = ["mean","median","most-frequent"]
         if self.strategy not in self.supported_strategies:
             print(f":ERROR: `{self.strategy}` is not a supported strategy.\nSupported strategies are: `{('`,`'.join(self.supported_strategies))}` .")
             sys.exit(1)
@@ -89,7 +89,8 @@ class ImputerApi(object):
         
         fn_mapping={
             "mean": self.arr_replace_by_mean,
-            "median": self.arr_replace_by_median
+            "median": self.arr_replace_by_median,
+            "most-frequent":self.arr_replace_by_most_frequent
         }
         fn_to_be_called = fn_mapping[self.strategy]
 
@@ -181,7 +182,6 @@ class ImputerApi(object):
                 sys.exit(1)
             else:
                 pass
-        
         try:
             with open(dst_file_path, 'w', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -250,6 +250,26 @@ class ImputerApi(object):
             return arr_cp[len(arr_cp)//2]
         else:
             return (arr_cp[len(arr_cp)//2]+arr_cp[len(arr_cp)//2-1])/2
+    
+    @staticmethod
+    def most_frequent(arr,missing_value=''):
+        dct = {}
+        for el in arr:
+            if el == missing_value:
+                pass
+            else:
+                if str(el) in dct.keys():
+                    dct[str(el)] = dct[str(el)] + 1
+                else:
+                    dct[str(el)] = 1
+        max_key = ''
+        max_val = 0
+        for (k,v) in dct.items():
+            if v > max_val:
+                max_val = v
+                max_key = k
+        return max_key
+
 
     def arr_replace_by_mean(self, arr, index_arr,missing_value=''):
         arr_copy = copy.deepcopy(arr)
@@ -269,4 +289,14 @@ class ImputerApi(object):
                 arr_copy[i] = str(median_)
             else:
                 arr_copy[i] = median_
+        return arr_copy
+
+    def arr_replace_by_most_frequent(self, arr, index_arr,missing_value=''):
+        arr_copy = copy.deepcopy(arr)
+        most_frequent_ = ImputerApi.most_frequent(arr_copy,missing_value)
+        for i in index_arr:
+            if isinstance(arr[i],str):
+                arr_copy[i] = str(most_frequent_)
+            else:
+                arr_copy[i] = most_frequent_
         return arr_copy
