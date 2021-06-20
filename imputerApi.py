@@ -201,7 +201,8 @@ class ImputerApi(object):
 
         print(f"\nFile Saved: `{dst_file_path}`")
 
-    def mean(self, arr,missing_value=''):
+    @staticmethod
+    def mean(arr,missing_value=''):
         l = len(arr)
         missing_count=0
         try:
@@ -224,7 +225,8 @@ class ImputerApi(object):
                     sys.exit(1)
         return (sum/(l-missing_count))
 
-    def median(self,arr,missing_value=''):
+    @staticmethod
+    def median(arr,missing_value=''):
         l = len(arr)
         try:
             assert(l > 0)
@@ -251,7 +253,7 @@ class ImputerApi(object):
 
     def arr_replace_by_mean(self, arr, index_arr,missing_value=''):
         arr_copy = copy.deepcopy(arr)
-        mean_ = self.mean(arr_copy,missing_value)
+        mean_ = ImputerApi.mean(arr_copy,missing_value)
         for i in index_arr:
             if isinstance(arr[i],str):
                 arr_copy[i] = str(mean_)
@@ -261,7 +263,7 @@ class ImputerApi(object):
 
     def arr_replace_by_median(self, arr, index_arr,missing_value=''):
         arr_copy = copy.deepcopy(arr)
-        median_ = self.median(arr_copy,missing_value)
+        median_ = ImputerApi.median(arr_copy,missing_value)
         for i in index_arr:
             if isinstance(arr[i],str):
                 arr_copy[i] = str(median_)
