@@ -150,7 +150,10 @@ class ImputerApi(object):
             temp_array=[]
             for i in range(row_start,row_end+1):
                 temp_array.append(self.data[i][index])
-            index_arr=[i for i in range(0,len(temp_array)) if temp_array[i]==missing_value]
+            if isinstance(missing_value,list)==True:
+                index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] in missing_value]
+            else:
+                index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
             if index_arr == []:
                 warning_text= f&#34;:WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and selected in columns: {col_header_indexes} .\n&#34;
                 warnings.warn(warning_text)
@@ -212,7 +215,7 @@ class ImputerApi(object):
             if new_arr==[]:
                 return data_copy
         
-    def print_table(self,arr_2D):
+    def print_table(self,arr_2D,row_sep=&#34; &#34;):
         assert(isinstance(arr_2D,list))
         assert(len(arr_2D)&gt;0)
         header_dashes_chars_count = len(&#39;&#39;.join([str(x) for x in arr_2D[0]])) + len(arr_2D[0])
@@ -220,20 +223,21 @@ class ImputerApi(object):
             if (len(&#39;&#39;.join(self.headers_value)) + len(self.headers_value)) &gt; header_dashes_chars_count:
                 header_dashes_chars_count = len(&#39;&#39;.join(self.headers_value)) + len(self.headers_value)
             print(&#34;-&#34;*header_dashes_chars_count)  
-            print(&#39; &#39;.join(self.headers_value))
+            print(row_sep.join(self.headers_value))
         else:
             print(&#39;-&#39;*header_dashes_chars_count)
         for row in arr_2D:
-            print(&#39; &#39;.join([str(x) for x in row]))
+            print(row_sep.join([str(x) for x in row]))
         print(&#39;-&#39;*header_dashes_chars_count)
 
-    def dump_data_to_csv(self,dst_file_path,data:list,delimiter=&#39;,&#39;,override=False,use_header_from_data=False):
+    def dump_data_to_csv(self,dst_file_path,data:list,delimiter=&#39;,&#39;,quotechar=&#39;&#34;&#39;,override=False,use_header_from_data=False):
         &#34;&#34;&#34;Function to get mean of a list 
         
             Parameters:
             dst_file_path (String): CSV file name to write to,
             data (List): Matrix to be written,
             delimiter (String): Delimiter to be used in CSV,
+            quotechar (Strng): Quote Character to be used while wrting to CSV,
             override (Boolean): Override existing file,
             use_header_from_data (Boolean): Flag whether to use header values from input data
 
@@ -255,7 +259,7 @@ class ImputerApi(object):
                 pass
         try:
             with open(dst_file_path, &#39;w&#39;, newline=&#39;&#39;) as csvfile:
-                csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar=&#39;|&#39;, quoting=csv.QUOTE_MINIMAL)
+                csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar=quotechar, quoting=csv.QUOTE_MINIMAL)
                 if use_header_from_data == True:
                     if self.headers_value == []:
                         warnings.warn(&#34;\n:WARNING: Original Data File have no header values. Skipping use_header_from_data=True flag\n&#34;)
@@ -293,17 +297,17 @@ class ImputerApi(object):
             sys.exit(1)
         sum = 0
         for i in range(l):
-            if arr[i] == missing_value:
-                missing_count = missing_count + 1            
-            else:
-                try:
-                    sum = sum + float(arr[i])
-                except Exception as e:
-                    print(e)
-                    print(
-                        f&#34;:ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.&#34;)
-                    print(&#34;Strategy `mean` requires values to be float.&#34;)
-                    sys.exit(1)
+            if arr[i] == missing_value or arr[i] in missing_value:
+                missing_count = missing_count + 1
+                continue
+            try:
+                sum = sum + float(arr[i])
+            except Exception as e:
+                print(e)
+                print(
+                    f&#34;:ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.&#34;)
+                print(&#34;Strategy `mean` requires values to be float.&#34;)
+                sys.exit(1)
         return (sum/(l-missing_count))
 
     @staticmethod
@@ -329,7 +333,7 @@ class ImputerApi(object):
         for _ in range(l):
             try:
                 el=next(arr_gen)
-                if el==missing_value:
+                if el == missing_value or el in missing_value:
                     pass
                 else:
                     arr_cp.append(float(el))
@@ -356,7 +360,7 @@ class ImputerApi(object):
         &#34;&#34;&#34;
         dct = {}
         for el in arr:
-            if el == missing_value:
+            if el == missing_value or el in missing_value:
                 pass
             else:
                 if str(el) in dct.keys():
@@ -595,7 +599,10 @@ Return : None</p></div>
             temp_array=[]
             for i in range(row_start,row_end+1):
                 temp_array.append(self.data[i][index])
-            index_arr=[i for i in range(0,len(temp_array)) if temp_array[i]==missing_value]
+            if isinstance(missing_value,list)==True:
+                index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] in missing_value]
+            else:
+                index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
             if index_arr == []:
                 warning_text= f&#34;:WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and selected in columns: {col_header_indexes} .\n&#34;
                 warnings.warn(warning_text)
@@ -657,7 +664,7 @@ Return : None</p></div>
             if new_arr==[]:
                 return data_copy
         
-    def print_table(self,arr_2D):
+    def print_table(self,arr_2D,row_sep=&#34; &#34;):
         assert(isinstance(arr_2D,list))
         assert(len(arr_2D)&gt;0)
         header_dashes_chars_count = len(&#39;&#39;.join([str(x) for x in arr_2D[0]])) + len(arr_2D[0])
@@ -665,20 +672,21 @@ Return : None</p></div>
             if (len(&#39;&#39;.join(self.headers_value)) + len(self.headers_value)) &gt; header_dashes_chars_count:
                 header_dashes_chars_count = len(&#39;&#39;.join(self.headers_value)) + len(self.headers_value)
             print(&#34;-&#34;*header_dashes_chars_count)  
-            print(&#39; &#39;.join(self.headers_value))
+            print(row_sep.join(self.headers_value))
         else:
             print(&#39;-&#39;*header_dashes_chars_count)
         for row in arr_2D:
-            print(&#39; &#39;.join([str(x) for x in row]))
+            print(row_sep.join([str(x) for x in row]))
         print(&#39;-&#39;*header_dashes_chars_count)
 
-    def dump_data_to_csv(self,dst_file_path,data:list,delimiter=&#39;,&#39;,override=False,use_header_from_data=False):
+    def dump_data_to_csv(self,dst_file_path,data:list,delimiter=&#39;,&#39;,quotechar=&#39;&#34;&#39;,override=False,use_header_from_data=False):
         &#34;&#34;&#34;Function to get mean of a list 
         
             Parameters:
             dst_file_path (String): CSV file name to write to,
             data (List): Matrix to be written,
             delimiter (String): Delimiter to be used in CSV,
+            quotechar (Strng): Quote Character to be used while wrting to CSV,
             override (Boolean): Override existing file,
             use_header_from_data (Boolean): Flag whether to use header values from input data
 
@@ -700,7 +708,7 @@ Return : None</p></div>
                 pass
         try:
             with open(dst_file_path, &#39;w&#39;, newline=&#39;&#39;) as csvfile:
-                csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar=&#39;|&#39;, quoting=csv.QUOTE_MINIMAL)
+                csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar=quotechar, quoting=csv.QUOTE_MINIMAL)
                 if use_header_from_data == True:
                     if self.headers_value == []:
                         warnings.warn(&#34;\n:WARNING: Original Data File have no header values. Skipping use_header_from_data=True flag\n&#34;)
@@ -738,17 +746,17 @@ Return : None</p></div>
             sys.exit(1)
         sum = 0
         for i in range(l):
-            if arr[i] == missing_value:
-                missing_count = missing_count + 1            
-            else:
-                try:
-                    sum = sum + float(arr[i])
-                except Exception as e:
-                    print(e)
-                    print(
-                        f&#34;:ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.&#34;)
-                    print(&#34;Strategy `mean` requires values to be float.&#34;)
-                    sys.exit(1)
+            if arr[i] == missing_value or arr[i] in missing_value:
+                missing_count = missing_count + 1
+                continue
+            try:
+                sum = sum + float(arr[i])
+            except Exception as e:
+                print(e)
+                print(
+                    f&#34;:ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.&#34;)
+                print(&#34;Strategy `mean` requires values to be float.&#34;)
+                sys.exit(1)
         return (sum/(l-missing_count))
 
     @staticmethod
@@ -774,7 +782,7 @@ Return : None</p></div>
         for _ in range(l):
             try:
                 el=next(arr_gen)
-                if el==missing_value:
+                if el == missing_value or el in missing_value:
                     pass
                 else:
                     arr_cp.append(float(el))
@@ -801,7 +809,7 @@ Return : None</p></div>
         &#34;&#34;&#34;
         dct = {}
         for el in arr:
-            if el == missing_value:
+            if el == missing_value or el in missing_value:
                 pass
             else:
                 if str(el) in dct.keys():
@@ -971,17 +979,17 @@ def mean(arr,missing_value=&#39;&#39;):
         sys.exit(1)
     sum = 0
     for i in range(l):
-        if arr[i] == missing_value:
-            missing_count = missing_count + 1            
-        else:
-            try:
-                sum = sum + float(arr[i])
-            except Exception as e:
-                print(e)
-                print(
-                    f&#34;:ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.&#34;)
-                print(&#34;Strategy `mean` requires values to be float.&#34;)
-                sys.exit(1)
+        if arr[i] == missing_value or arr[i] in missing_value:
+            missing_count = missing_count + 1
+            continue
+        try:
+            sum = sum + float(arr[i])
+        except Exception as e:
+            print(e)
+            print(
+                f&#34;:ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.&#34;)
+            print(&#34;Strategy `mean` requires values to be float.&#34;)
+            sys.exit(1)
     return (sum/(l-missing_count))</code></pre>
 </details>
 </dd>
@@ -1022,7 +1030,7 @@ def median(arr,missing_value=&#39;&#39;):
     for _ in range(l):
         try:
             el=next(arr_gen)
-            if el==missing_value:
+            if el == missing_value or el in missing_value:
                 pass
             else:
                 arr_cp.append(float(el))
@@ -1064,7 +1072,7 @@ def most_frequent(arr,missing_value=&#39;&#39;):
     &#34;&#34;&#34;
     dct = {}
     for el in arr:
-        if el == missing_value:
+        if el == missing_value or el in missing_value:
             pass
         else:
             if str(el) in dct.keys():
@@ -1265,7 +1273,7 @@ list: Replaced List</p></div>
 </details>
 </dd>
 <dt id="imputerApi.ImputerApi.dump_data_to_csv"><code class="name flex">
-<span>def <span class="ident">dump_data_to_csv</span></span>(<span>self, dst_file_path, data: list, delimiter=',', override=False, use_header_from_data=False)</span>
+<span>def <span class="ident">dump_data_to_csv</span></span>(<span>self, dst_file_path, data: list, delimiter=',', quotechar='"', override=False, use_header_from_data=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Function to get mean of a list </p>
@@ -1273,6 +1281,7 @@ list: Replaced List</p></div>
 dst_file_path (String): CSV file name to write to,
 data (List): Matrix to be written,
 delimiter (String): Delimiter to be used in CSV,
+quotechar (Strng): Quote Character to be used while wrting to CSV,
 override (Boolean): Override existing file,
 use_header_from_data (Boolean): Flag whether to use header values from input data</p>
 <p>Returns:
@@ -1281,13 +1290,14 @@ None</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def dump_data_to_csv(self,dst_file_path,data:list,delimiter=&#39;,&#39;,override=False,use_header_from_data=False):
+<pre><code class="python">def dump_data_to_csv(self,dst_file_path,data:list,delimiter=&#39;,&#39;,quotechar=&#39;&#34;&#39;,override=False,use_header_from_data=False):
     &#34;&#34;&#34;Function to get mean of a list 
     
         Parameters:
         dst_file_path (String): CSV file name to write to,
         data (List): Matrix to be written,
         delimiter (String): Delimiter to be used in CSV,
+        quotechar (Strng): Quote Character to be used while wrting to CSV,
         override (Boolean): Override existing file,
         use_header_from_data (Boolean): Flag whether to use header values from input data
 
@@ -1309,7 +1319,7 @@ None</p></div>
             pass
     try:
         with open(dst_file_path, &#39;w&#39;, newline=&#39;&#39;) as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar=&#39;|&#39;, quoting=csv.QUOTE_MINIMAL)
+            csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar=quotechar, quoting=csv.QUOTE_MINIMAL)
             if use_header_from_data == True:
                 if self.headers_value == []:
                     warnings.warn(&#34;\n:WARNING: Original Data File have no header values. Skipping use_header_from_data=True flag\n&#34;)
@@ -1359,7 +1369,7 @@ None</p></div>
 </details>
 </dd>
 <dt id="imputerApi.ImputerApi.print_table"><code class="name flex">
-<span>def <span class="ident">print_table</span></span>(<span>self, arr_2D)</span>
+<span>def <span class="ident">print_table</span></span>(<span>self, arr_2D, row_sep=' ')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -1367,7 +1377,7 @@ None</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def print_table(self,arr_2D):
+<pre><code class="python">def print_table(self,arr_2D,row_sep=&#34; &#34;):
     assert(isinstance(arr_2D,list))
     assert(len(arr_2D)&gt;0)
     header_dashes_chars_count = len(&#39;&#39;.join([str(x) for x in arr_2D[0]])) + len(arr_2D[0])
@@ -1375,11 +1385,11 @@ None</p></div>
         if (len(&#39;&#39;.join(self.headers_value)) + len(self.headers_value)) &gt; header_dashes_chars_count:
             header_dashes_chars_count = len(&#39;&#39;.join(self.headers_value)) + len(self.headers_value)
         print(&#34;-&#34;*header_dashes_chars_count)  
-        print(&#39; &#39;.join(self.headers_value))
+        print(row_sep.join(self.headers_value))
     else:
         print(&#39;-&#39;*header_dashes_chars_count)
     for row in arr_2D:
-        print(&#39; &#39;.join([str(x) for x in row]))
+        print(row_sep.join([str(x) for x in row]))
     print(&#39;-&#39;*header_dashes_chars_count)</code></pre>
 </details>
 </dd>
@@ -1420,7 +1430,10 @@ None</p></div>
         temp_array=[]
         for i in range(row_start,row_end+1):
             temp_array.append(self.data[i][index])
-        index_arr=[i for i in range(0,len(temp_array)) if temp_array[i]==missing_value]
+        if isinstance(missing_value,list)==True:
+            index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] in missing_value]
+        else:
+            index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
         if index_arr == []:
             warning_text= f&#34;:WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and selected in columns: {col_header_indexes} .\n&#34;
             warnings.warn(warning_text)

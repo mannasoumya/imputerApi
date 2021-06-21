@@ -122,7 +122,10 @@ class ImputerApi(object):
             temp_array=[]
             for i in range(row_start,row_end+1):
                 temp_array.append(self.data[i][index])
-            index_arr=[i for i in range(0,len(temp_array)) if temp_array[i]==missing_value]
+            if isinstance(missing_value,list)==True:
+                index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] in missing_value]
+            else:
+                index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
             if index_arr == []:
                 warning_text= f":WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and selected in columns: {col_header_indexes} .\n"
                 warnings.warn(warning_text)
@@ -184,7 +187,7 @@ class ImputerApi(object):
             if new_arr==[]:
                 return data_copy
         
-    def print_table(self,arr_2D):
+    def print_table(self,arr_2D,row_sep=" "):
         assert(isinstance(arr_2D,list))
         assert(len(arr_2D)>0)
         header_dashes_chars_count = len(''.join([str(x) for x in arr_2D[0]])) + len(arr_2D[0])
@@ -192,20 +195,21 @@ class ImputerApi(object):
             if (len(''.join(self.headers_value)) + len(self.headers_value)) > header_dashes_chars_count:
                 header_dashes_chars_count = len(''.join(self.headers_value)) + len(self.headers_value)
             print("-"*header_dashes_chars_count)  
-            print(' '.join(self.headers_value))
+            print(row_sep.join(self.headers_value))
         else:
             print('-'*header_dashes_chars_count)
         for row in arr_2D:
-            print(' '.join([str(x) for x in row]))
+            print(row_sep.join([str(x) for x in row]))
         print('-'*header_dashes_chars_count)
 
-    def dump_data_to_csv(self,dst_file_path,data:list,delimiter=',',override=False,use_header_from_data=False):
+    def dump_data_to_csv(self,dst_file_path,data:list,delimiter=',',quotechar='"',override=False,use_header_from_data=False):
         """Function to get mean of a list 
         
             Parameters:
             dst_file_path (String): CSV file name to write to,
             data (List): Matrix to be written,
             delimiter (String): Delimiter to be used in CSV,
+            quotechar (Strng): Quote Character to be used while wrting to CSV,
             override (Boolean): Override existing file,
             use_header_from_data (Boolean): Flag whether to use header values from input data
 
@@ -227,7 +231,7 @@ class ImputerApi(object):
                 pass
         try:
             with open(dst_file_path, 'w', newline='') as csvfile:
-                csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                csv_writer = csv.writer(csvfile, delimiter=delimiter,quotechar=quotechar, quoting=csv.QUOTE_MINIMAL)
                 if use_header_from_data == True:
                     if self.headers_value == []:
                         warnings.warn("\n:WARNING: Original Data File have no header values. Skipping use_header_from_data=True flag\n")
@@ -265,17 +269,17 @@ class ImputerApi(object):
             sys.exit(1)
         sum = 0
         for i in range(l):
-            if arr[i] == missing_value:
-                missing_count = missing_count + 1            
-            else:
-                try:
-                    sum = sum + float(arr[i])
-                except Exception as e:
-                    print(e)
-                    print(
-                        f":ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.")
-                    print("Strategy `mean` requires values to be float.")
-                    sys.exit(1)
+            if arr[i] == missing_value or arr[i] in missing_value:
+                missing_count = missing_count + 1
+                continue
+            try:
+                sum = sum + float(arr[i])
+            except Exception as e:
+                print(e)
+                print(
+                    f":ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.")
+                print("Strategy `mean` requires values to be float.")
+                sys.exit(1)
         return (sum/(l-missing_count))
 
     @staticmethod
@@ -301,7 +305,7 @@ class ImputerApi(object):
         for _ in range(l):
             try:
                 el=next(arr_gen)
-                if el==missing_value:
+                if el == missing_value or el in missing_value:
                     pass
                 else:
                     arr_cp.append(float(el))
@@ -328,7 +332,7 @@ class ImputerApi(object):
         """
         dct = {}
         for el in arr:
-            if el == missing_value:
+            if el == missing_value or el in missing_value:
                 pass
             else:
                 if str(el) in dct.keys():
