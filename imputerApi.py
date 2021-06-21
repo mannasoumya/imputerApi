@@ -127,7 +127,7 @@ class ImputerApi(object):
             else:
                 index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
             if index_arr == []:
-                warning_text= f":WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and selected in columns: {col_header_indexes} .\n"
+                warning_text= f":WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and in selected columns: {col_header_indexes} .\n"
                 warnings.warn(warning_text)
             if self.strategy == "constant":
                 if constant==None:
@@ -279,6 +279,7 @@ class ImputerApi(object):
                 print(
                     f":ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.")
                 print("Strategy `mean` requires values to be float.")
+                print(f"If `{arr[i]}` is a missing value, pass multiple values in missing_value=[...,'{arr[i]}'] as a List value in parameter of transform function.")
                 sys.exit(1)
         return (sum/(l-missing_count))
 
@@ -302,7 +303,7 @@ class ImputerApi(object):
             sys.exit(1)
         arr_cp=[]
         arr_gen=(x for x in arr)
-        for _ in range(l):
+        for i in range(l):
             try:
                 el=next(arr_gen)
                 if el == missing_value or el in missing_value:
@@ -311,6 +312,10 @@ class ImputerApi(object):
                     arr_cp.append(float(el))
             except Exception as e:
                 print(e)
+                print(
+                    f":ERROR: Conversion of `{el}` to float failed at array location `{i}`.")
+                print(f"Strategy `median` requires values to be float.") 
+                print(f"If `{el}` is a missing value, pass multiple values in missing_value=[...,'{el}'] as a List value in parameter of transform function.")
                 sys.exit(1)
         arr_cp = sorted(arr_cp)
         if len(arr_cp) % 2==1:
