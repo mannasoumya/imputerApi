@@ -386,9 +386,24 @@ class ImputerApi(object):
             any: most frequent value of the List
 
         """
+        nan_flg=False
+        if isinstance(missing_value,list):
+            for x in missing_value:
+                if math.isnan(x)==True:
+                    nan_flg = True
+                    break
+        else:
+            if math.isnan(missing_value) == True:
+                nan_flg = True
         dct = {}
         for el in arr:
-            if el == missing_value or el in missing_value:
+            if nan_flg == True:
+                if math.isnan(el):
+                        continue
+            if isinstance(missing_value,list):
+                if el in missing_value:
+                    pass
+            if el == missing_value:
                 pass
             else:
                 if str(el) in dct.keys():
