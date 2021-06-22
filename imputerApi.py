@@ -3,6 +3,7 @@ import copy
 import csv
 import warnings
 import os
+import math
 
 class ImputerApi(object):
     def __init__(self, path_to_file=None, matrix_2D=None, delimiter=",", strategy="mean",headers=True) -> None:
@@ -116,16 +117,23 @@ class ImputerApi(object):
             "constant":self.arr_replace_by_constant
         }
         fn_to_be_called = fn_mapping[self.strategy]
-
+        if isinstance(missing_value,list):
+            missing_value = list(set(missing_value))
         result=[]
         for index in col_header_indexes:
             temp_array=[]
             for i in range(row_start,row_end+1):
                 temp_array.append(self.data[i][index])
             if isinstance(missing_value,list)==True:
-                index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] in missing_value]
+                if True in [math.isnan(x) for x in missing_value]:
+                    index_arr = [i for i in range(0,len(temp_array)) if temp_array[i] in missing_value or math.isnan(temp_array[i])]
+                else:
+                    index_arr = [i for i in range(0,len(temp_array)) if temp_array[i] in missing_value]
             else:
-                index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
+                if math.isnan(missing_value):
+                    index_arr = [i for i in range(0,len(temp_array)) if math.isnan(temp_array[i]) == True]
+                else:
+                    index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
             if index_arr == []:
                 warning_text= f":WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and in selected columns: {col_header_indexes} .\n"
                 warnings.warn(warning_text)
@@ -262,6 +270,15 @@ class ImputerApi(object):
         """
         l = len(arr)
         missing_count=0
+        nan_flg=False
+        if isinstance(missing_value,list):
+            for x in missing_value:
+                if math.isnan(x)==True:
+                    nan_flg = True
+                    break
+        else:
+            if math.isnan(missing_value) == True:
+                nan_flg = True
         try:
             assert(l > 0)
         except Exception as e:
@@ -269,18 +286,40 @@ class ImputerApi(object):
             sys.exit(1)
         sum = 0
         for i in range(l):
-            if arr[i] == missing_value or arr[i] in missing_value:
-                missing_count = missing_count + 1
-                continue
-            try:
-                sum = sum + float(arr[i])
-            except Exception as e:
-                print(e)
-                print(
-                    f":ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.")
-                print("Strategy `mean` requires values to be float.")
-                print(f"If `{arr[i]}` is a missing value, pass multiple values in missing_value=[...,'{arr[i]}'] as a List value in parameter of transform function.")
-                sys.exit(1)
+            miss_flg = False
+            if nan_flg == True:
+                if isinstance(missing_value,list):
+                    for x in missing_value:
+                        if math.isnan(x) == True:
+                            if math.isnan(arr[i]) == True:
+                                missing_count = missing_count + 1
+                                miss_flg = True
+                        if math.isnan(x) == False :
+                            if arr[i] == x:
+                                missing_count = missing_count + 1
+                                miss_flg = True
+                                continue
+                else:
+                    if math.isnan(arr[i]):
+                        missing_count = missing_count + 1
+                        miss_flg = True
+                        continue
+            if nan_flg == False:
+                if arr[i] == missing_value or arr[i] in missing_value:
+                    missing_count = missing_count + 1
+                    miss_flg = True
+                    continue
+            if miss_flg==False:
+                try:
+                    sum = sum + float(arr[i])
+                except Exception as e:
+                    print(e)
+                    print(
+                        f":ERROR: Conversion of `{arr[i]}` to float failed at array location `{i}`.")
+                    print("Strategy `mean` requires values to be float.")
+                    print(f"If `{arr[i]}` is a missing value, pass multiple values in missing_value=[...,'{arr[i]}'] as a List value in parameter of transform function.")
+                    sys.exit(1)
+        
         return (sum/(l-missing_count))
 
     @staticmethod
@@ -296,6 +335,15 @@ class ImputerApi(object):
 
         """
         l = len(arr)
+        nan_flg=False
+        if isinstance(missing_value,list):
+            for x in missing_value:
+                if math.isnan(x)==True:
+                    nan_flg = True
+                    break
+        else:
+            if math.isnan(missing_value) == True:
+                nan_flg = True
         try:
             assert(l > 0)
         except Exception as e:
@@ -305,7 +353,10 @@ class ImputerApi(object):
         arr_gen=(x for x in arr)
         for i in range(l):
             try:
-                el=next(arr_gen)
+                el = next(arr_gen)
+                if nan_flg == True:
+                    if math.isnan(el):
+                        continue
                 if el == missing_value or el in missing_value:
                     pass
                 else:

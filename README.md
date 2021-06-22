@@ -69,3 +69,26 @@ imm_api_most_freq.print_table(replaced_data)
 imm_api_most_freq.dump_data_to_csv('datanew_most_frequent.csv', replaced_data,
                          use_header_from_data=True, override=True)
 ```
+
+#### Integrating with pandas,numpy
+
+```python
+from imputerApi import ImputerApi
+import numpy as np
+import pandas as pd
+# Read csv data as Pandas DataFrame
+df = pd.read_csv('data.csv')
+# Convert Pandas Dataframe to Numpy Array
+arr = df.values
+# Convert Numpy Array to Python List 
+arr_list = arr.tolist()
+# Pass List to ImputerApi in parameter matrix_2D ; headers = False since it is 2D array
+imputer_api = ImputerApi(matrix_2D=arr_list,strategy="mean",headers=False)
+# Replacing missing value 'np.nan' with mean
+replaced_data = imputer_api.transform(column_indexes=[1,2],missing_value=np.nan)
+# Print to console
+imputer_api.print_table(arr_2D=replaced_data)
+# Write data to CSV file
+imputer_api.dump_data_to_csv("data2.csv",replaced_data,override=True)
+
+```
