@@ -399,7 +399,7 @@ class ImputerApi(object):
         for el in arr:
             if nan_flg == True:
                 if math.isnan(el):
-                        continue
+                    continue
             if isinstance(missing_value,list):
                 if el in missing_value:
                     pass
