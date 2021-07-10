@@ -130,12 +130,13 @@ class ImputerApi(object):
                 else:
                     index_arr = [i for i in range(0,len(temp_array)) if temp_array[i] in missing_value]
             else:
-                if math.isnan(missing_value):
-                    index_arr = [i for i in range(0,len(temp_array)) if math.isnan(temp_array[i]) == True]
+                if isinstance(missing_value,str):
+                    index_arr = [i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
                 else:
-                    index_arr=[i for i in range(0,len(temp_array)) if temp_array[i] == missing_value]
+                    if math.isnan(missing_value):
+                        index_arr = [i for i in range(0,len(temp_array)) if math.isnan(temp_array[i]) == True]
             if index_arr == []:
-                warning_text= f":WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and in selected columns: {col_header_indexes} .\n"
+                warning_text = f":WARNING: There are no missing value = ` {missing_value} ` in the given range from {row_start} to {row_end} and in selected columns: {col_header_indexes} .\n"
                 warnings.warn(warning_text)
             if self.strategy == "constant":
                 if constant==None:
@@ -273,12 +274,14 @@ class ImputerApi(object):
         nan_flg=False
         if isinstance(missing_value,list):
             for x in missing_value:
-                if math.isnan(x)==True:
-                    nan_flg = True
-                    break
+                if isinstance(x,str)==False:
+                    if math.isnan(x)==True:
+                        nan_flg = True
+                        break
         else:
-            if math.isnan(missing_value) == True:
-                nan_flg = True
+            if isinstance(missing_value,str)==False:
+                if math.isnan(missing_value) == True:
+                    nan_flg = True
         try:
             assert(l > 0)
         except Exception as e:
@@ -338,12 +341,14 @@ class ImputerApi(object):
         nan_flg=False
         if isinstance(missing_value,list):
             for x in missing_value:
-                if math.isnan(x)==True:
-                    nan_flg = True
-                    break
+                if isinstance(x,str) == False:
+                    if math.isnan(x)==True:
+                        nan_flg = True
+                        break
         else:
-            if math.isnan(missing_value) == True:
-                nan_flg = True
+            if isinstance(missing_value,str) == False:
+                if math.isnan(missing_value) == True:
+                    nan_flg = True
         try:
             assert(l > 0)
         except Exception as e:
@@ -386,15 +391,23 @@ class ImputerApi(object):
             any: most frequent value of the List
 
         """
+        try:
+            assert(len(arr)>0)
+        except Exception as e:
+            print(e)
+            print(":ERROR: Empty List.")
+            sys.exit(1)
         nan_flg=False
         if isinstance(missing_value,list):
             for x in missing_value:
-                if math.isnan(x)==True:
-                    nan_flg = True
-                    break
+                if isinstance(x,str) == False:
+                    if math.isnan(x)==True:
+                        nan_flg = True
+                        break
         else:
-            if math.isnan(missing_value) == True:
-                nan_flg = True
+            if isinstance(missing_value,str) == False:
+                if math.isnan(missing_value) == True:
+                    nan_flg = True
         dct = {}
         for el in arr:
             if nan_flg == True:
@@ -417,6 +430,33 @@ class ImputerApi(object):
                 max_val = v
                 max_key = k
         return max_key
+
+    @staticmethod
+    def euclidian_distance_2d(tup1,tup2):
+        assert(isinstance(tup1) == tuple)
+        assert(isinstance(tup2) == tuple)
+        assert(len(tup1) == 2)
+        assert(len(tup2) == 2)
+
+        x1,y1 = tup1
+        x2,y2 = tup2
+        return math.sqrt((x2-x1)**2+(y1-y2)**2)
+
+    @staticmethod
+    def levenshteinDistance(s1, s2):
+        if len(s1) > len(s2):
+            s1, s2 = s2, s1
+
+        distances = range(len(s1) + 1)
+        for i2, c2 in enumerate(s2):
+            distances_ = [i2+1]
+            for i1, c1 in enumerate(s1):
+                if c1 == c2:
+                    distances_.append(distances[i1])
+                else:
+                    distances_.append(1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
+            distances = distances_
+        return distances[-1]
 
 
     def arr_replace_by_mean(self, arr, index_arr,missing_value=''):
