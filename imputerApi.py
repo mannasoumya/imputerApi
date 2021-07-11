@@ -4,6 +4,8 @@ import csv
 import warnings
 import os
 import math
+import operator
+import collections
 
 class ImputerApi(object):
     def __init__(self, path_to_file=None, matrix_2D=None, delimiter=",", strategy="mean",headers=True) -> None:
@@ -18,7 +20,7 @@ class ImputerApi(object):
         self.data = []
         self.headers = headers
         self.headers_value = []
-        self.supported_strategies = ["mean","median","most-frequent","constant"]
+        self.supported_strategies = ["mean","median","most-frequent","constant","knn"]
         if self.strategy not in self.supported_strategies:
             print(f":ERROR: `{self.strategy}` is not a supported strategy.\nSupported strategies are: `{('`,`'.join(self.supported_strategies))}` .")
             sys.exit(1)
@@ -95,7 +97,7 @@ class ImputerApi(object):
             print(e.args)
             sys.exit(1)
     
-    def transform(self,columns_by_header_name=[],column_indexes=[],row_start=0,row_end=-1,missing_value='',constant=None):
+    def transform(self,columns_by_header_name=[],column_indexes=[],row_start=0,row_end=-1,missing_value='',constant=None,knn_method=None,knn_selection="most-frequent"):
         if row_end==-1:
             row_end = len(self.data)-1
         if isinstance(row_start,int)==False or row_start<0 or row_start>row_end or (float(row_start)-row_start)!=0.0:
@@ -114,7 +116,8 @@ class ImputerApi(object):
             "mean": self.arr_replace_by_mean,
             "median": self.arr_replace_by_median,
             "most-frequent":self.arr_replace_by_most_frequent,
-            "constant":self.arr_replace_by_constant
+            "constant":self.arr_replace_by_constant,
+            "knn":self.arr_replace_by_knn
         }
         fn_to_be_called = fn_mapping[self.strategy]
         if isinstance(missing_value,list):
@@ -125,7 +128,7 @@ class ImputerApi(object):
             for i in range(row_start,row_end+1):
                 temp_array.append(self.data[i][index])
             if isinstance(missing_value,list)==True:
-                if True in [math.isnan(x) for x in missing_value]:
+                if True in [math.isnan(x) for x in missing_value if isinstance(x,str)==False]:
                     index_arr = [i for i in range(0,len(temp_array)) if temp_array[i] in missing_value or math.isnan(temp_array[i])]
                 else:
                     index_arr = [i for i in range(0,len(temp_array)) if temp_array[i] in missing_value]
@@ -144,6 +147,12 @@ class ImputerApi(object):
                     sys.exit(1)
                 else:
                     result.append(fn_to_be_called(temp_array,index_arr,missing_value,constant))
+            elif self.strategy == "knn":
+                if knn_method == None:
+                    print(f"\n:ERROR: Parameter `knn_method` needs to be passed to `transform`. Available methods are Euclidian,Levenshtein\n")
+                    sys.exit(1)
+                else:
+                    result.append(fn_to_be_called(temp_array,index_arr,missing_value,mode=knn_method.lower(),selection_function=knn_selection))
             else:
                 result.append(fn_to_be_called(temp_array,index_arr,missing_value))
                 
@@ -308,7 +317,7 @@ class ImputerApi(object):
                         miss_flg = True
                         continue
             if nan_flg == False:
-                if arr[i] == missing_value or arr[i] in missing_value:
+                if str(arr[i]) == missing_value or str(arr[i]) in missing_value:
                     missing_count = missing_count + 1
                     miss_flg = True
                     continue
@@ -362,7 +371,7 @@ class ImputerApi(object):
                 if nan_flg == True:
                     if math.isnan(el):
                         continue
-                if el == missing_value or el in missing_value:
+                if str(el) == missing_value or str(el) in missing_value:
                     pass
                 else:
                     arr_cp.append(float(el))
@@ -458,6 +467,62 @@ class ImputerApi(object):
             distances = distances_
         return distances[-1]
 
+    @staticmethod
+    def knn_arr_to_dct(arr,k=5,mode="euclidian"):
+        dct = {}
+        l = len(arr)
+        assert(l>0)
+        assert(k<=(l-1))
+        for i in range(l):
+            el = arr[i]
+            el_name = str(el)
+            if el_name not in dct:
+                dct[el_name] = {}
+                for j in range(0,l):
+                    if i!=j:
+                        if mode == "euclidian":
+                            try:
+                                float(el)
+                                float(arr[j])
+                            except Exception as e:
+                                print(e)
+                                print(":ERROR: Values must be integer or float for Euclidian Method to Work. Try Levenshtein in parameters for strings")
+                                sys.exit(1)
+                            dct[el_name][str(arr[j])] = abs(float(el)-float(arr[j]))
+                        if mode.lower() == "levenshtein":
+                            dct[el_name][str(arr[j])] = ImputerApi.levenshteinDistance(str(el),str(arr[j])) #if len(str(el))>=len(str(arr[j])) else levenshteinDistance(str(arr[j]),str(el))
+                dct[el_name] = dict(collections.OrderedDict(sorted(dct[el_name].items(), key=operator.itemgetter(1))))
+
+        knn_dct = {}
+        for outer_key in dct.keys():
+            knn_dct[str(outer_key)] = []
+            for index , inner_key in enumerate(dct[outer_key]):
+                if index == k:
+                    break
+                knn_dct[str(outer_key)].append(str(inner_key))
+        return knn_dct
+
+    def select_by_knn_strategy(self,truncated_arr,values_to_need_knn_dct,mode="euclidian",selection_function="most-frequent"):
+        # print(truncated_arr,mode)
+        knn_dct = ImputerApi.knn_arr_to_dct(truncated_arr, k=5, mode=mode)
+        result = {}
+        methods_op_mapping = {
+            "mean":ImputerApi.mean,
+            "median":ImputerApi.median,
+            "most-frequent":ImputerApi.most_frequent
+        }
+        # print(knn_dct)
+        for k in values_to_need_knn_dct.keys():
+            v = values_to_need_knn_dct[k]
+            measure = []
+            if v["l_value"]!= None:
+                measure.append(methods_op_mapping[selection_function](knn_dct[v["l_value"]]))
+            if v["r_value"]!= None:
+                measure.append(methods_op_mapping[selection_function](knn_dct[v["r_value"]]))
+            result[k] = methods_op_mapping[selection_function](measure)
+        
+        return result
+        
 
     def arr_replace_by_mean(self, arr, index_arr,missing_value=''):
         """Wrapper Function over mean which performs replace operation given indexed array 
@@ -541,4 +606,48 @@ class ImputerApi(object):
                 arr_copy[i] = str(constant)
             else:
                 arr_copy[i] = constant
+        return arr_copy
+    
+
+    def arr_replace_by_knn(self,arr,index_arr,missing_value='',mode="euclidian",selection_function="most-frequent"):
+        if len(index_arr) == 0:
+            return arr
+        truncated_arr = copy.deepcopy(arr)
+        values_to_need_knn_dct={}
+        for index in index_arr:
+            l_ind = -1
+            r_ind = -1
+            if index==0:
+                r_ind = index + 1
+                while(r_ind in index_arr and r_ind<len(arr)-1):
+                    r_ind = r_ind + 1
+            if index==len(arr)-1:
+                l_ind = index - 1
+                while(l_ind in index_arr and l_ind>0):
+                    l_ind = l_ind + 1
+            else:
+                l_ind = index - 1
+                while(l_ind in index_arr and l_ind>0):
+                    l_ind = l_ind - 1
+                r_ind = index + 1
+                while(r_ind in index_arr and r_ind<len(arr)-1):
+                    r_ind = r_ind + 1
+            
+            
+            l_value = None if l_ind == -1 else arr[l_ind]
+            r_value = None if r_ind == -1 else arr[r_ind]
+            values_to_need_knn_dct[str(index)] = {
+                "l_value": l_value,
+                "r_value": r_value
+            }
+        
+        for index in index_arr:
+            truncated_arr.remove(arr[index])
+        
+        res_dct = self.select_by_knn_strategy(truncated_arr,values_to_need_knn_dct=values_to_need_knn_dct,mode=mode,selection_function=selection_function)
+
+        arr_copy = copy.deepcopy(arr)
+        for index in index_arr:
+            arr_copy[index]=res_dct[str(index)]
+        
         return arr_copy

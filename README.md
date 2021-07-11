@@ -10,6 +10,7 @@ Check out the [Wiki](<https://en.wikipedia.org/wiki/Imputation_(statistics)>) he
 - Median
 - Most-Frequent
 - Constant
+- K Nearest Neighbors
 
 ## Usage:
 
@@ -70,7 +71,7 @@ imm_api_most_freq.dump_data_to_csv('datanew_most_frequent.csv', replaced_data,
                          use_header_from_data=True, override=True)
 ```
 
-#### Integrating with pandas,numpy
+#### Integrating with pandas,numpy:
 
 ```python
 from imputerApi import ImputerApi
@@ -88,7 +89,22 @@ imputer_api = ImputerApi(matrix_2D=arr_list,strategy="mean",headers=False)
 replaced_data = imputer_api.transform(column_indexes=[1,2],missing_value=np.nan)
 # Print to console
 imputer_api.print_table(arr_2D=replaced_data)
-# Write data to CSV file
+# Write data to CSV file2
 imputer_api.dump_data_to_csv("data2.csv",replaced_data,override=True)
 
+```
+
+#### Using K-Nearest Neighbors
+
+```python
+# Loading Data
+imputer_api= ImputerApi(".data.csv",strategy="knn",headers=True)
+# Imputing Purchased Column containing Text Categorical Values using knn technique and distance method 'Levenshtein'
+replaced_data = imputer_api.transform(columns_by_header_name=["Purchased"],missing_value="",knn_method="levenshtein",knn_selection="most-frequent")
+# Creating new instance of ImputerApi using replaced_data
+imputer_api2 = ImputerApi(matrix_2D=replaced_data,strategy="knn",headers=False)
+# Imputing colums 1 and 2 using knn and distance method 'Eucilidian;
+replaced_data = imputer_api2.transform(column_indexes=[1,2],missing_value="",knn_method="Euclidian",knn_selection="median")
+# Writing replaced data to file
+imputer_api.dump_data_to_csv("data2.csv",replaced_data,override=True,use_header_from_data=True)
 ```
