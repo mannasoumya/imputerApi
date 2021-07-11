@@ -98,12 +98,13 @@ imputer_api.dump_data_to_csv("data2.csv",replaced_data,override=True)
 
 ```python
 # Loading Data
-imputer_api= ImputerApi(".data.csv",strategy="knn",headers=True)
-# Imputing Purchased Column containing Text Categorical Values using knn technique and distance method 'Levenshtein'
+imputer_api= ImputerApi("data.csv",strategy="knn",headers=True)
+# Imputing Purchased Column containing Text Categorical Values 
+# using knn technique and distance method 'Levenshtein'
 replaced_data = imputer_api.transform(columns_by_header_name=["Purchased"],missing_value="",knn_method="levenshtein",knn_selection="most-frequent")
 # Creating new instance of ImputerApi using replaced_data
 imputer_api2 = ImputerApi(matrix_2D=replaced_data,strategy="knn",headers=False)
-# Imputing colums 1 and 2 using knn and distance method 'Eucilidian;
+# Imputing colums 1 and 2 using knn and distance method 'Eucilidian'
 replaced_data = imputer_api2.transform(column_indexes=[1,2],missing_value="",knn_method="Euclidian",knn_selection="median")
 # Writing replaced data to file
 imputer_api.dump_data_to_csv("data2.csv",replaced_data,override=True,use_header_from_data=True)
