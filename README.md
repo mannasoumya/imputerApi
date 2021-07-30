@@ -1,5 +1,8 @@
 # Data Imputer API in Python
 
+[![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/) <br>
+[![Generic badge](https://img.shields.io/badge/imputerApi-passing-<COLOR>.svg)](https://shields.io/)
+
 Check out the [Wiki](<https://en.wikipedia.org/wiki/Imputation_(statistics)>) here.
 
 ### <a href="https://mannasoumya.github.io/imputerApi/" target="_blank"> 'imputerApi' Documentation. </a>
