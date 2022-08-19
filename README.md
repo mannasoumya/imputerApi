@@ -9,6 +9,13 @@ Check out the [Wiki](<https://en.wikipedia.org/wiki/Imputation_(statistics)>) he
 
 ### <a href="https://mannasoumya.github.io/imputerApi/" target="_blank"> 'imputerApi' Documentation. </a>
 
+## Installation
+```console
+$ python3 -m venv venv
+$ source venv/bin/activate
+(venv) $ pip install ImputerApi
+```
+
 ## Currently Supported Strategies:
 
 - Mean
@@ -22,7 +29,8 @@ Check out the [Wiki](<https://en.wikipedia.org/wiki/Imputation_(statistics)>) he
 #### Read from csv file:
 
 ```python
-from imputerApi import ImputerApi
+from ImputerAPI.imputerApi import ImputerApi
+
 # Create instance of class
 imm_api = ImputerApi(path_to_file="data.csv",strategy='mean', headers=True)
 # Print data in console
@@ -39,7 +47,8 @@ imm_api.dump_data_to_csv('datanew_mean.csv', replaced_data,use_header_from_data=
 #### Read from a Two Dimensional Matrix (Python List):
 
 ```python
-from imputerApi import ImputerApi
+from ImputerAPI.imputerApi import ImputerApi
+
 matrix_2d = [
     ['Country', 'Age', 'Salary', 'Purchased'],
     ['France', 44, 72000, 'No'],
