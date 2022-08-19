@@ -88,7 +88,7 @@ imm_api_most_freq.dump_data_to_csv('datanew_most_frequent.csv', replaced_data,
 #### Integrating with pandas,numpy:
 
 ```python
-from imputerApi import ImputerApi
+from ImputerAPI.imputerApi import ImputerApi
 import numpy as np
 import pandas as pd
 # Read csv data as Pandas DataFrame
